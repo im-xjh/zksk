@@ -1,0 +1,47 @@
+20260625境外动态（中科数科）
+　　　　
+　　　　一、对华攻击点
+　　　　1.从宁德时代电池厂看中美技术博弈变局。6月25日，《纽约时报》报道，在中国东南部的一家工厂里，机械臂如芭蕾舞者般旋转，将长条金属卷成卷，再塑造成块状，它们最终将制成电池。
+　　　　https://cn.nytimes.com/business/20260624/china-megafactory-us-tech-race/?utm_source=RSS
+　　　　2.中国正吸引全球转向人民币并削弱西方制裁。6月24日，《华尔街日报》报道，白宫已与伊朗就一项新的核协议展开谈判，并依赖于一项传统实力：承诺放松制裁，并允许伊朗动用约1,000亿美元被冻结资产中的一部分。
+　　　　https://cn.wsj.com/articles/yuan-sanctions-dollar-alternative-d0e2cc04
+　　　　3.美国此举针对古巴采矿业，或将对与中国相关的供应链产生影响。6月24日，《南华早报》报道，周二，特朗普政府扩大了对古巴的制裁行动，目标是古巴一家国有矿业公司和其他重要的经济实体。此举是华盛顿寻求为关键矿产建立替代供应链并减少对地缘政治对手的依赖。
+　　　　https://www.scmp.com/news/china/diplomacy/article/3358112/us-targets-cuba-mining-sector-move-implications-china-linked-supply-chains?pgtype=live
+　　　　4.Anthropic指控阿里巴巴“非法”获取人工智能模型。6月25日，彭博社报道，Anthropic PBC指责中国科技巨头阿里巴巴集团控股有限公司利用数千个欺诈账户，大规模“非法”访问其 Claude 人工智能模型，破坏了这家美国人工智能开发商将其产品排除在中国之外的决定。
+　　　　https://www.bloomberg.com/news/articles/2026-06-24/anthropic-accuses-alibaba-of-illicitly-accessing-its-ai-models
+　　　　5.铜危机：美中争夺关键全球供应链的内幕。6月24日，《南华早报》报道，当中国和美国在人工智能、能源和其他战略领域争夺领导地位时，供应链下游正在上演一场更为低调但同样重要的竞争：争夺铜资源的竞赛。
+　　　　https://www.scmp.com/economy/global-economy/article/3358060/copper-crunch-inside-us-china-battle-critical-global-supply-chain?pgtype=live
+　　　　6.英伟达被禁的AI芯片在中国黑市价格翻了一番。6月24日，《金融时报》报道，由于美国打击非法出口与中国企业的强劲需求相冲突，英伟达人工智能芯片在中国黑市上的价格已经翻了一番多。
+　　　　https://www.ft.com/content/57fcd3ce-464f-4dc2-8ea2-5712d4972c69?syn-25a6b1a6=1
+　　　　7.“中国倡议2.0”：美国加大对中国学者的打压力度。6月24日，《南华早报》报道，顶尖移民律师和活动人士表示，美国政府加大了对中国科学家和研究人员的打压力度——他们认为，这场运动甚至比美国总统唐纳德·特朗普第一任期内发起的备受争议的“中国倡议”更加激进。
+　　　　https://www.scmp.com/news/china/diplomacy/article/3358117/china-initiative-20-us-crackdown-chinese-scholars-intensifies?pgtype=live
+　　　　8.科顿和李两位参议员要求特朗普政府切断中国对国家实验室的访问权限。6月24日，《纽约邮报》报道，两位共和党参议员对中国进入美国国家实验室表示严重关切，警告称北京可能正在秘密收集敏感的国家安全信息。
+　　　　https://nypost.com/2026/06/23/us-news/sens-tom-cotton-mike-lee-demand-trump-cut-off-chinese-from-national-labs/
+
+　　　　二、客观理性声音
+　　　　1.据AidData报道，肯尼亚对华贷款的调整引发了人们对人民币转换的更广泛关注。6月24日，路透社报道，AidData 的一项研究发现，肯尼亚将中国贷款从美元转换为人民币以降低借贷成本的举措，至少引起了其他五个非洲和亚洲国家的兴趣。
+　　　　https://www.reuters.com/world/asia-pacific/kenyas-china-loan-revamp-sparks-wider-interest-yuan-switch-aiddata-says-2026-06-23/
+　　　　2.中国正着手应对人口危机，一些行业从中看到了机遇。6月24日，《南华早报》报道，随着中国成为世界上老龄化速度最快的经济体之一——这一趋势引发了人们对未来生产力的担忧，以及该国劳动人口和退休人口之间差距的扩大——高盛表示，制药和生物技术行业最终可能成为人口结构变化的最大受益者，而汽车制造商和科技硬件制造商可能会面临更大的阻力。
+　　　　https://www.scmp.com/business/china-business/article/3358119/china-plans-demographic-crisis-some-sectors-see-opportunity?pgtype=live
+　　　　3.为什么中国的真实世界试验场是扩大全球医疗创新规模的关键。6月24日，世界经济论坛报道，世界各地的医疗系统正面临着一个日益严峻的悖论：需求持续增长，而医疗能力却难以跟上。
+　　　　https://www.weforum.org/stories/2026/06/china-testbeds-scaling-healthcare-innovation/
+　　　　4.摩根士丹利将中国人形机器人出货量预测值翻了一番，原因是商业化进程加速。6月24日，CNBC报道，摩根士丹利大幅上调了对中国人形机器人市场的预期，称该行业从演示阶段向商业部署阶段的转变速度比预期更快。
+　　　　https://www.cnbc.com/2026/06/24/morgan-stanley-china-humanoid-robot-market-forecast.html
+　　　　5.塔里克总理离开大连前往北京。6月24日，Dhaka Tribune报道，总理塔里克·拉赫曼(Tarique Rahman)在参加为期两天的世界经济论坛(WEF)第17届新领军者年会（又称夏季达沃斯论坛）后，于周三下午离开大连前往北京。
+　　　　https://www.dhakatribune.com/amp/bangladesh/foreign-affairs/413479/pm-tarique-leaves-dalian-for-beijing
+　　　　6.Pimco认为中国出口过剩将提振新兴市场债券。6月24日，彭博社报道，太平洋投资管理公司表示，中国大量廉价出口商品有助于控制发展中国家的通货膨胀，从而增强了新兴市场债券的吸引力。
+　　　　https://www.bloomberg.com/news/articles/2026-06-24/pimco-sees-china-s-export-glut-boosting-emerging-market-bonds
+　　　　7.微信能否成为中国的人工智能杀手级应用？6月24日，彭博社报道，中国人工智能行业面临的最大问题之一是，还没有哪家公司开发出真正意义上的“杀手级”人工智能应用。
+　　　　https://www.bloomberg.com/opinion/articles/2026-06-23/can-wechat-become-china-s-killer-ai-app
+　　　　8.日本半导体设备对华销售减一成，中国国产化取得进展。6月24日，日经中文网报道，中国半导体制造设备的国产化开始取得进展。2025财年（截至2026年3月）日本五大半导体设备企业的合计对华销售额下降一成，首次低于上财年，欧美企业的对华销售也陷入停滞。
+　　　　https://cn.nikkei.com/industry/manufacturing/62963-2026-06-24-08-39-37.html?start=1
+　　　　
+　　　　三、美西方内部批评反思文章
+　　　　1.最新民调显示，全球对特朗普和美国的信任度正在下降。6月24日，《南华早报》报道，华盛顿皮尤研究中心周二公布的一项新调查显示，全球对美国总统唐纳德·特朗普的领导能力的信心依然低迷，而对美国作为可靠伙伴的看法也持续下降。
+　　　　https://www.scmp.com/news/china/diplomacy/article/3358142/new-poll-shows-eroding-global-trust-trump-and-america
+　　　　2.西方可以如何“偷师”中国，同时又保持自我。6月24日，《华尔街日报》报道，几十年来，中国一直将美国奉为经济上的导师。直到2008至2009年全球金融危机爆发。
+　　　　https://cn.wsj.com/articles/%E8%A5%BF%E6%96%B9%E5%8F%AF%E4%BB%A5%E5%A6%82%E4%BD%95-%E5%81%B7%E5%B8%88-%E4%B8%AD%E5%9B%BD-%E5%90%8C%E6%97%B6%E5%8F%88%E4%BF%9D%E6%8C%81%E8%87%AA%E6%88%91-1eceac67
+　　　　3.荷兰游说美国，希望其放弃针对阿斯麦销售的对华芯片限制措施。6月24日，彭博社报道，荷兰正游说美国，不要扩大对半导体设备的出口管制，此举将限制阿斯麦对华销售的能力。
+　　　　https://www.bloomberg.com/news/articles/2026-06-24/netherlands-lobbies-us-to-drop-chip-curbs-targeting-asml-sales?utm_source=glassdoor&utm_medium=bd&utm_campaign=company&cmpId=glassdoor.company
+　　　　4.在中国周围设置生物技术壁垒是有代价的。6月24日，彭博社报道，美国立法者正积极推动企业撤出在中国的生物技术投资。但切断美国制药商与这一快速增长的药物创新来源的联系，最终只会适得其反，并在新药研发竞赛中将阵地拱手让给亚洲竞争对手。
+　　　　https://www.bloomberg.com/opinion/articles/2026-06-23/a-us-biotech-wall-around-china-would-come-at-a-cost

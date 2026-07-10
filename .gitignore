@@ -3,3 +3,7 @@ render_*/
 *.tmp
 Thumbs.db
 .DS_Store
+.work/
+.claude/
+__pycache__/
+*.pyc
