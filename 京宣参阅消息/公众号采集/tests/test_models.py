@@ -56,6 +56,8 @@ def test_build_feed_keeps_exactly_last_ten_days():
     feed = build_feed(rows, now)
 
     assert [item["title"] for item in feed["articles"]] == ["inside", "boundary"]
+    assert feed["version"] == 1
+    assert feed["window_days"] == 10
     assert feed["generated_at"] == "2026-07-29T12:00:00+08:00"
 
 

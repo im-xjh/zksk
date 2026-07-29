@@ -1,6 +1,8 @@
 (function () {
   "use strict";
 
+  const ARTICLE_FIELDS = ["id", "account_name", "title", "summary", "published_at", "url"];
+
   function escapeHtml(value) {
     return String(value)
       .replace(/&/g, "&amp;")
@@ -36,6 +38,60 @@
     return url.href;
   }
 
+  function isWechatArticleUrl(value) {
+    if (typeof value !== "string") {
+      return false;
+    }
+    try {
+      articleUrl(value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function isParseableTime(value) {
+    return typeof value === "string" && !Number.isNaN(Date.parse(value));
+  }
+
+  function invalidFeed() {
+    throw new TypeError("文章数据格式无效");
+  }
+
+  function validateFeed(feed) {
+    if (
+      !feed ||
+      typeof feed !== "object" ||
+      Array.isArray(feed) ||
+      feed.version !== 1 ||
+      feed.window_days !== 10 ||
+      !(feed.generated_at === null || isParseableTime(feed.generated_at)) ||
+      !Number.isInteger(feed.article_count) ||
+      feed.article_count < 0 ||
+      !Array.isArray(feed.articles) ||
+      feed.article_count !== feed.articles.length
+    ) {
+      invalidFeed();
+    }
+
+    for (const article of feed.articles) {
+      if (
+        !article ||
+        typeof article !== "object" ||
+        Array.isArray(article) ||
+        Object.keys(article).length !== ARTICLE_FIELDS.length ||
+        !ARTICLE_FIELDS.every((field) => Object.hasOwn(article, field)) ||
+        !ARTICLE_FIELDS.every((field) => typeof article[field] === "string") ||
+        !isParseableTime(article.published_at) ||
+        !isWechatArticleUrl(article.url)
+      ) {
+        invalidFeed();
+      }
+    }
+
+    return feed;
+  }
+
   function renderArticle(article) {
     const url = articleUrl(article.url);
     const summary = article.summary ? `<p class="article-summary">${escapeHtml(article.summary)}</p>` : "";
@@ -43,10 +99,8 @@
   }
 
   function renderPage(feed) {
-    if (!feed || !Array.isArray(feed.articles) || !Number.isInteger(feed.window_days)) {
-      throw new TypeError("文章数据格式无效");
-    }
-    const count = Number.isInteger(feed.article_count) ? feed.article_count : feed.articles.length;
+    validateFeed(feed);
+    const count = feed.article_count;
     const articles = [...feed.articles].sort((left, right) => new Date(right.published_at) - new Date(left.published_at));
     const meta = document.getElementById("feed-meta");
     const status = document.getElementById("feed-status");
@@ -78,7 +132,7 @@
   }
 
   if (typeof module !== "undefined") {
-    module.exports = { formatPublishedAt, renderArticle };
+    module.exports = { formatPublishedAt, renderArticle, validateFeed };
   }
 
   if (typeof document !== "undefined") {

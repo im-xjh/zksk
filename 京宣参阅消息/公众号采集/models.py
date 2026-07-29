@@ -88,7 +88,9 @@ def build_feed(
         unique_articles.append(public_article(article))
 
     return {
+        "version": 1,
         "generated_at": now.astimezone(ZoneInfo("Asia/Shanghai")).isoformat(),
+        "window_days": window_days,
         "article_count": len(unique_articles),
         "articles": unique_articles,
     }
