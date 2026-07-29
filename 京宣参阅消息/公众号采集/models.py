@@ -62,6 +62,7 @@ def build_feed(
 ) -> dict:
     """保留时间窗口内的文章，按发布时间倒序去重后生成公开 Feed。"""
     cutoff_ts = int((now - timedelta(days=window_days)).timestamp())
+    now_ts = int(now.timestamp())
     articles = [
         Article(
             url=str(row["url"]),
@@ -74,7 +75,7 @@ def build_feed(
             publish_ts=int(row["publish_ts"]),
         )
         for row in rows
-        if int(row["publish_ts"]) >= cutoff_ts
+        if cutoff_ts <= int(row["publish_ts"]) <= now_ts
     ]
     articles.sort(key=lambda article: (article.publish_ts, article.url), reverse=True)
 

@@ -50,6 +50,7 @@ def test_build_feed_keeps_exactly_last_ten_days():
         article_row("inside", now - timedelta(days=9, hours=23)),
         article_row("boundary", now - timedelta(days=10)),
         article_row("outside", now - timedelta(days=10, seconds=1)),
+        article_row("future", now + timedelta(seconds=1)),
     ]
 
     feed = build_feed(rows, now)
