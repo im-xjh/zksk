@@ -153,3 +153,16 @@ def test_get_feed_truncates_api_error_body_without_token_or_headers(client, fake
 
     assert str(error.value) == "GitHub Contents API 请求失败：" + "x" * 500
     assert "secret-token" not in str(error.value)
+
+
+def test_get_feed_redacts_token_echoed_by_api_error(client, fake_http):
+    fake_http.get_response = FakeResponse(
+        500, text="上游鉴权失败：secret-token；请检查凭据。"
+    )
+
+    with pytest.raises(GitHubFeedError) as error:
+        client.get_feed("docs/jingxuan/feed.json")
+
+    assert "secret-token" not in str(error.value)
+    assert "上游鉴权失败" in str(error.value)
+    assert "请检查凭据" in str(error.value)

@@ -26,6 +26,7 @@ class GitHubFeedClient:
         branch: str = "main",
         session: requests.Session | None = None,
     ):
+        self._token = token
         self.repo = repo
         self.branch = branch
         self.session = session or requests.Session()
@@ -96,7 +97,9 @@ class GitHubFeedClient:
             and remote_feed.get("articles") == feed.get("articles")
         )
 
-    @staticmethod
-    def _raise_api_error(response) -> None:
-        body = response.text[:500]
+    def _raise_api_error(self, response) -> None:
+        body = response.text
+        if self._token:
+            body = body.replace(self._token, "[REDACTED]")
+        body = body[:500]
         raise GitHubFeedError(f"GitHub Contents API 请求失败：{body}")
