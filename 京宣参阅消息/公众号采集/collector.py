@@ -22,6 +22,10 @@ from state import open_state, recent_rows, upsert_articles
 LOGGER = logging.getLogger(__name__)
 
 
+class AuthorizationKeyError(RuntimeError):
+    """授权键无法安全解析。"""
+
+
 @dataclass
 class RunReport:
     accounts_ok: int = 0
@@ -72,7 +76,10 @@ def run_once(
         LOGGER.info("京宣采集跳过 existing_sync_active")
         return RunReport(skipped_reason="existing_sync_active")
 
-    auth_key = deps.auth_key_resolver(config.auth_cookie_dir)
+    try:
+        auth_key = deps.auth_key_resolver(config.auth_cookie_dir)
+    except OSError:
+        raise AuthorizationKeyError("授权键解析失败") from None
     cutoff_ts = int((now - timedelta(days=config.window_days)).timestamp())
     conn = deps.state_factory(config.state_db)
     report = RunReport()
@@ -86,7 +93,8 @@ def run_once(
                     account,
                     cutoff_ts,
                     initial,
-                    deps.sleep,
+                    max_pages=10,
+                    sleep=deps.sleep,
                 )
                 upsert_articles(conn, articles, now.isoformat())
                 report.accounts_ok += 1
@@ -174,7 +182,7 @@ def main(argv: list[str] | None = None) -> int:
             return _exit_status(report)
         run_forever(config)
         return 0
-    except (ConfigurationError, SessionExpired) as error:
+    except (AuthorizationKeyError, ConfigurationError, SessionExpired) as error:
         print(f"采集任务失败：{type(error).__name__}", file=sys.stderr)
         return 1
 

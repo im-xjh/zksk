@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 import json
-import sqlite3
 import sys
 from zoneinfo import ZoneInfo
 
@@ -40,8 +39,28 @@ class FakeExporter:
         self.return_by_fakeid = {}
         self.errors_by_fakeid = {}
         self.calls = []
+        self.fetch_calls = []
 
-    def fetch(self, account, cutoff_ts, initial, sleep):
+    def fetch(
+        self,
+        session,
+        base_url,
+        auth_key,
+        account,
+        cutoff_ts,
+        initial,
+        max_pages=10,
+        sleep=None,
+    ):
+        self.fetch_calls.append(
+            {
+                "session": session,
+                "base_url": base_url,
+                "auth_key": auth_key,
+                "max_pages": max_pages,
+                "sleep": sleep,
+            }
+        )
         self.calls.append(account["fakeid"])
         error = self.errors_by_fakeid.get(account["fakeid"])
         if error:
@@ -113,7 +132,7 @@ def deps(tmp_path):
         clock=lambda: NOW,
         sleep=lambda seconds: None,
         auth_key_resolver=lambda path: "auth-key",
-        fetch_account_fn=lambda session, base_url, auth_key, account, cutoff_ts, initial, sleep: session.fetch(account, cutoff_ts, initial, sleep),
+        fetch_account_fn=exporter.fetch,
         existing_sync_checker=lambda path, now: False,
     )
 
@@ -129,6 +148,8 @@ def test_run_once_publishes_recent_articles_in_account_order_independent_way(dep
     assert report.accounts_ok == 2
     assert report.published is True
     assert [item["title"] for item in deps.github.last_feed["articles"]] == ["new"]
+    assert [call["max_pages"] for call in deps.exporter.fetch_calls] == [10, 10]
+    assert all(call["sleep"] is deps.sleep for call in deps.exporter.fetch_calls)
 
 
 def test_run_once_skips_during_existing_daily_sync(deps, config):
@@ -184,6 +205,22 @@ def test_once_cli_returns_nonzero_after_session_expiry(config, monkeypatch):
     )
 
     assert main(["once"]) == 1
+
+
+def test_once_cli_hides_auth_key_path_on_resolver_failure(
+    config, deps, monkeypatch, capsys
+):
+    sensitive_path = "/private/exporter-kv-cookie/current-auth-key"
+
+    def fail_auth_key(_path):
+        raise FileNotFoundError(sensitive_path)
+
+    deps.auth_key_resolver = fail_auth_key
+    monkeypatch.setattr("collector.Config.load", lambda: config)
+    monkeypatch.setattr("collector._default_dependencies", lambda config: deps)
+
+    assert main(["once"]) == 1
+    assert sensitive_path not in capsys.readouterr().err
 
 
 def test_run_once_reports_one_account_error_and_continues(deps, config):
