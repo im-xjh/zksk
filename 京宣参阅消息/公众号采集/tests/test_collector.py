@@ -6,6 +6,7 @@ import sys
 from zoneinfo import ZoneInfo
 
 import pytest
+import requests
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -13,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from config import Config, ConfigurationError
 from collector import AuthorizationKeyError, Dependencies, RunReport, main, run_forever, run_once
 from exporter import FrequencyControlled, SessionExpired
-from github_feed import GitHubFeedError, PublishResult
+from github_feed import GitHubFeedClient, GitHubFeedError, PublishResult
 from models import Article
 from state import open_state
 
@@ -101,6 +102,14 @@ class Clock:
 
 class StopScheduler(Exception):
     pass
+
+
+class FailingGitHubHTTP:
+    def __init__(self, error):
+        self.error = error
+
+    def get(self, url, headers, params, timeout):
+        raise self.error
 
 
 @pytest.fixture
@@ -310,6 +319,28 @@ def test_once_cli_hides_auth_key_path_on_resolver_failure(
     assert sensitive_path not in capsys.readouterr().err
 
 
+def test_once_cli_wraps_github_connection_failure_without_traceback(
+    config, deps, monkeypatch, capsys
+):
+    sensitive_url = "https://api.github.test/secret-token/private-feed"
+    deps.exporter_session.return_by_fakeid["a"] = [make_article("kept", hours_ago=1)]
+    deps.github_client_factory = lambda: GitHubFeedClient(
+        token="secret-token",
+        repo="im-xjh/zksk",
+        session=FailingGitHubHTTP(requests.exceptions.ConnectionError(sensitive_url)),
+    )
+    monkeypatch.setattr("collector.Config.load", lambda: config)
+    monkeypatch.setattr("collector._default_dependencies", lambda config: deps)
+
+    assert main(["once"]) == 1
+
+    error_output = capsys.readouterr().err
+    assert "GitHubFeedError" in error_output
+    assert "Traceback" not in error_output
+    assert sensitive_url not in error_output
+    assert "secret-token" not in error_output
+
+
 def test_run_once_reports_one_account_error_and_continues(deps, config):
     deps.exporter_session.errors_by_fakeid["a"] = RuntimeError("bad account")
     deps.exporter_session.return_by_fakeid["b"] = [make_article("kept", hours_ago=1)]
@@ -482,3 +513,31 @@ def test_scheduler_keeps_cadence_after_reported_session_expiry_and_continues(
         run_forever(config, deps=deps)
 
     assert sleeps == [563, 597]
+
+
+def test_run_mode_sleeps_remaining_interval_after_github_timeout(
+    config, deps, caplog
+):
+    sensitive_url = "https://api.github.test/secret-token/private-feed"
+    sleeps = []
+    deps.exporter_session.return_by_fakeid["a"] = [make_article("kept", hours_ago=1)]
+    deps.github_client_factory = lambda: GitHubFeedClient(
+        token="secret-token",
+        repo="im-xjh/zksk",
+        session=FailingGitHubHTTP(requests.exceptions.Timeout(sensitive_url)),
+    )
+    deps.clock = Clock([NOW, NOW, NOW + timedelta(seconds=37)])
+
+    def stop_after_sleep(seconds):
+        sleeps.append(seconds)
+        raise StopScheduler()
+
+    deps.sleep = stop_after_sleep
+    caplog.set_level(logging.ERROR, logger="collector")
+
+    with pytest.raises(StopScheduler):
+        run_forever(config, deps=deps)
+
+    assert sleeps == [563]
+    assert sensitive_url not in caplog.text
+    assert "secret-token" not in caplog.text

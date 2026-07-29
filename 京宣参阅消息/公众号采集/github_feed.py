@@ -37,12 +37,15 @@ class GitHubFeedClient:
 
     def get_feed(self, path: str) -> tuple[dict | None, str | None]:
         """读取现有 Feed，文件尚未创建时返回空值。"""
-        response = self.session.get(
-            self._contents_url(path),
-            headers=self.headers,
-            params={"ref": self.branch},
-            timeout=30,
-        )
+        try:
+            response = self.session.get(
+                self._contents_url(path),
+                headers=self.headers,
+                params={"ref": self.branch},
+                timeout=30,
+            )
+        except requests.RequestException:
+            raise GitHubFeedError("GitHub Contents API 网络请求失败") from None
         if response.status_code == 404:
             return None, None
         if response.status_code != 200:
@@ -70,12 +73,15 @@ class GitHubFeedClient:
         if blob_sha is not None:
             payload["sha"] = blob_sha
 
-        response = self.session.put(
-            self._contents_url(path),
-            headers=self.headers,
-            json=payload,
-            timeout=30,
-        )
+        try:
+            response = self.session.put(
+                self._contents_url(path),
+                headers=self.headers,
+                json=payload,
+                timeout=30,
+            )
+        except requests.RequestException:
+            raise GitHubFeedError("GitHub Contents API 网络请求失败") from None
         if response.status_code not in (200, 201):
             self._raise_api_error(response)
 

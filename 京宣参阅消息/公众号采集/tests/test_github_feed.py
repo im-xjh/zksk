@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 
 import pytest
+import requests
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -46,12 +47,16 @@ class FakeHTTP:
         self.get_calls.append(
             {"url": url, "headers": headers, "params": params, "timeout": timeout}
         )
+        if isinstance(self.get_response, requests.RequestException):
+            raise self.get_response
         return self.get_response
 
     def put(self, url, headers, json, timeout):
         self.put_calls.append(
             {"url": url, "headers": headers, "json": json, "timeout": timeout}
         )
+        if isinstance(self.put_response, requests.RequestException):
+            raise self.put_response
         return self.put_response
 
 
@@ -166,3 +171,28 @@ def test_get_feed_redacts_token_echoed_by_api_error(client, fake_http):
     assert "secret-token" not in str(error.value)
     assert "上游鉴权失败" in str(error.value)
     assert "请检查凭据" in str(error.value)
+
+
+def test_get_feed_wraps_timeout_in_fixed_safe_error(client, fake_http):
+    sensitive_url = "https://api.github.test/secret-token/private-feed"
+    fake_http.get_response = requests.exceptions.Timeout(sensitive_url)
+
+    with pytest.raises(GitHubFeedError) as error:
+        client.get_feed("docs/jingxuan/feed.json")
+
+    assert str(error.value) == "GitHub Contents API 网络请求失败"
+    assert sensitive_url not in str(error.value)
+    assert "secret-token" not in str(error.value)
+
+
+def test_publish_wraps_connection_error_in_fixed_safe_error(client, fake_http):
+    sensitive_url = "https://api.github.test/secret-token/private-feed"
+    fake_http.respond_not_found()
+    fake_http.put_response = requests.exceptions.ConnectionError(sensitive_url)
+
+    with pytest.raises(GitHubFeedError) as error:
+        client.publish_if_changed("docs/jingxuan/feed.json", feed(["a"]))
+
+    assert str(error.value) == "GitHub Contents API 网络请求失败"
+    assert sensitive_url not in str(error.value)
+    assert "secret-token" not in str(error.value)
