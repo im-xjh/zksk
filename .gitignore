@@ -8,3 +8,6 @@ Thumbs.db
 .claude/
 __pycache__/
 *.pyc
+.venv/
+.pytest_cache/
+京宣参阅消息/公众号采集/state/
