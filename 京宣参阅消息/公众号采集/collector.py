@@ -12,8 +12,8 @@ from typing import Callable
 import requests
 
 from config import Config, ConfigurationError
-from exporter import SessionExpired, fetch_account, latest_auth_key
-from github_feed import GitHubFeedClient
+from exporter import FrequencyControlled, SessionExpired, fetch_account, latest_auth_key
+from github_feed import GitHubFeedClient, GitHubFeedError
 from models import build_feed
 from state import existing_sync_active as state_existing_sync_active
 from state import open_state, recent_rows, upsert_articles
@@ -102,7 +102,9 @@ def run_once(
             except SessionExpired:
                 LOGGER.error("京宣采集失败 error_class=SessionExpired")
                 report.session_expired = True
-                return report
+                report.account_errors[account["name"]] = "SessionExpired"
+                if not initial:
+                    return report
             except Exception as error:
                 error_class = type(error).__name__
                 report.account_errors[account["name"]] = error_class
@@ -110,6 +112,11 @@ def run_once(
 
             if index < len(config.accounts) - 1 and config.account_delay_seconds:
                 deps.sleep(config.account_delay_seconds)
+
+        if initial and report.account_errors:
+            report.skipped_reason = "initial_account_failures"
+            LOGGER.error("京宣首次同步不发布 account_errors=%d", len(report.account_errors))
+            return report
 
         rows = recent_rows(conn, cutoff_ts)
         if report.accounts_ok == 0 and not rows:
@@ -142,9 +149,12 @@ def run_forever(config: Config, deps: Dependencies | None = None) -> None:
     deps = deps or _default_dependencies(config)
     while True:
         started = deps.clock()
-        report = run_once(config, deps=deps)
-        if report.session_expired:
-            raise SessionExpired("导出器登录会话已失效")
+        try:
+            report = run_once(config, deps=deps)
+            if report.session_expired:
+                LOGGER.error("京宣采集本轮失败")
+        except (AuthorizationKeyError, FrequencyControlled, GitHubFeedError, SessionExpired):
+            LOGGER.error("京宣采集本轮失败")
         elapsed_seconds = (deps.clock() - started).total_seconds()
         deps.sleep(max(1, config.interval_seconds - elapsed_seconds))
 
@@ -182,13 +192,19 @@ def main(argv: list[str] | None = None) -> int:
             return _exit_status(report)
         run_forever(config)
         return 0
-    except (AuthorizationKeyError, ConfigurationError, SessionExpired) as error:
+    except (
+        AuthorizationKeyError,
+        ConfigurationError,
+        FrequencyControlled,
+        GitHubFeedError,
+        SessionExpired,
+    ) as error:
         print(f"采集任务失败：{type(error).__name__}", file=sys.stderr)
         return 1
 
 
 def _exit_status(report: RunReport) -> int:
-    if report.session_expired:
+    if report.session_expired or report.account_errors:
         return 1
     return 0
 

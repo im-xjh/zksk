@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 from pathlib import Path
 import json
 import sys
@@ -10,9 +11,9 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from config import Config, ConfigurationError
-from collector import Dependencies, RunReport, main, run_forever, run_once
-from exporter import SessionExpired
-from github_feed import PublishResult
+from collector import AuthorizationKeyError, Dependencies, RunReport, main, run_forever, run_once
+from exporter import FrequencyControlled, SessionExpired
+from github_feed import GitHubFeedError, PublishResult
 from models import Article
 from state import open_state
 
@@ -96,6 +97,10 @@ class Clock:
 
     def __call__(self):
         return next(self.values)
+
+
+class StopScheduler(Exception):
+    pass
 
 
 @pytest.fixture
@@ -187,6 +192,88 @@ def test_config_load_rejects_duplicate_or_missing_fakeid(tmp_path, monkeypatch, 
         Config.load()
 
 
+def load_config(tmp_path, monkeypatch, accounts, *, window_days=None):
+    accounts_file = tmp_path / "accounts.json"
+    accounts_file.write_text(
+        json.dumps({"version": 1, "accounts": accounts}), encoding="utf-8"
+    )
+    monkeypatch.setenv("GITHUB_TOKEN", "token")
+    monkeypatch.setenv("ACCOUNTS_FILE", str(accounts_file))
+    if window_days is not None:
+        monkeypatch.setenv("WINDOW_DAYS", window_days)
+    return Config.load()
+
+
+@pytest.mark.parametrize("window_days", ["7", "0", "not-an-integer-secret"])
+def test_config_load_rejects_window_days_other_than_ten_without_echoing_value(
+    tmp_path, monkeypatch, window_days
+):
+    with pytest.raises(ConfigurationError) as error:
+        load_config(
+            tmp_path,
+            monkeypatch,
+            [{"name": "京宣", "fakeid": "fakeid-1"}],
+            window_days=window_days,
+        )
+
+    assert window_days not in str(error.value)
+
+
+def test_config_load_accepts_window_days_ten(tmp_path, monkeypatch):
+    config = load_config(
+        tmp_path,
+        monkeypatch,
+        [{"name": "京宣", "fakeid": "fakeid-1"}],
+        window_days="10",
+    )
+
+    assert config.window_days == 10
+
+
+def test_config_load_normalizes_canonical_nickname_to_collector_name(tmp_path, monkeypatch):
+    config = load_config(
+        tmp_path,
+        monkeypatch,
+        [{"nickname": "京宣", "fakeid": "fakeid-1"}],
+    )
+
+    assert config.accounts == [{"name": "京宣", "fakeid": "fakeid-1"}]
+
+
+def test_config_load_accepts_legacy_name(tmp_path, monkeypatch):
+    config = load_config(
+        tmp_path,
+        monkeypatch,
+        [{"name": "旧名称", "fakeid": "fakeid-1"}],
+    )
+
+    assert config.accounts == [{"name": "旧名称", "fakeid": "fakeid-1"}]
+
+
+def test_config_load_prefers_nickname_when_manifest_has_both_name_fields(tmp_path, monkeypatch):
+    config = load_config(
+        tmp_path,
+        monkeypatch,
+        [{"nickname": "规范名称", "name": "旧名称", "fakeid": "fakeid-1"}],
+    )
+
+    assert config.accounts == [{"name": "规范名称", "fakeid": "fakeid-1"}]
+
+
+@pytest.mark.parametrize(
+    "account",
+    [
+        {"fakeid": "fakeid-1"},
+        {"nickname": " ", "fakeid": "fakeid-1"},
+        {"nickname": "", "name": "旧名称", "fakeid": "fakeid-1"},
+        {"name": " ", "fakeid": "fakeid-1"},
+    ],
+)
+def test_config_load_rejects_missing_or_blank_normalized_name(tmp_path, monkeypatch, account):
+    with pytest.raises(ConfigurationError, match="名称"):
+        load_config(tmp_path, monkeypatch, [account])
+
+
 def test_session_expired_aborts_publication(deps, config):
     deps.exporter_session.errors_by_fakeid["a"] = SessionExpired()
 
@@ -235,6 +322,48 @@ def test_run_once_reports_one_account_error_and_continues(deps, config):
     assert [item["title"] for item in deps.github_client_factory().last_feed["articles"]] == ["kept"]
 
 
+def test_initial_run_with_account_failure_attempts_all_accounts_without_publication(
+    deps, config
+):
+    deps.exporter_session.errors_by_fakeid["a"] = RuntimeError("bad account")
+    deps.exporter_session.return_by_fakeid["b"] = [make_article("kept", hours_ago=1)]
+
+    report = run_once(config, initial=True, deps=deps)
+
+    assert deps.exporter_session.calls == ["a", "b"]
+    assert report.account_errors == {"账号 A": "RuntimeError"}
+    assert report.published is False
+    assert report.skipped_reason == "initial_account_failures"
+    assert deps.github_client_factory().last_feed is None
+
+
+def test_initial_run_attempts_remaining_accounts_after_session_expiry_without_publication(
+    deps, config
+):
+    deps.exporter_session.errors_by_fakeid["a"] = SessionExpired()
+    deps.exporter_session.return_by_fakeid["b"] = [make_article("kept", hours_ago=1)]
+
+    report = run_once(config, initial=True, deps=deps)
+
+    assert deps.exporter_session.calls == ["a", "b"]
+    assert report.account_errors == {"账号 A": "SessionExpired"}
+    assert report.session_expired is True
+    assert report.published is False
+    assert report.skipped_reason == "initial_account_failures"
+    assert deps.github_client_factory().last_feed is None
+
+
+@pytest.mark.parametrize("argv", [["once"], ["once", "--initial"]])
+def test_once_cli_returns_nonzero_after_account_failure(config, monkeypatch, argv):
+    monkeypatch.setattr("collector.Config.load", lambda: config)
+    monkeypatch.setattr(
+        "collector.run_once",
+        lambda config, initial=False: RunReport(account_errors={"账号 A": "RuntimeError"}),
+    )
+
+    assert main(argv) == 1
+
+
 def test_complete_account_failure_with_empty_state_does_not_publish(deps, config):
     deps.exporter_session.errors_by_fakeid = {"a": RuntimeError(), "b": RuntimeError()}
 
@@ -265,3 +394,91 @@ def test_scheduler_waits_until_ten_minutes_after_each_run_start(config, monkeypa
         run_forever(config, deps=deps)
 
     assert sleeps == [563]
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        pytest.param(AuthorizationKeyError("sensitive-auth-key"), id="authorization"),
+        pytest.param(SessionExpired("sensitive-cookie-path"), id="session"),
+        pytest.param(GitHubFeedError("sensitive-response-body"), id="github"),
+        pytest.param(FrequencyControlled("sensitive-frequency-detail"), id="frequency"),
+    ],
+)
+def test_scheduler_keeps_cadence_after_predictable_run_failure_and_continues(
+    config, monkeypatch, failure, caplog
+):
+    sleeps = []
+    calls = []
+    deps = Dependencies(
+        exporter_session=FakeExporter(),
+        state_factory=open_state,
+        github_client_factory=FakeGitHubClient,
+        clock=Clock(
+            [
+                NOW,
+                NOW + timedelta(seconds=37),
+                NOW + timedelta(seconds=600),
+                NOW + timedelta(seconds=603),
+            ]
+        ),
+        sleep=lambda seconds: sleeps.append(seconds),
+    )
+
+    def fake_run_once(config, initial=False, deps=None):
+        calls.append(None)
+        if len(calls) == 1:
+            raise failure
+        return RunReport()
+
+    def stop_after_second_sleep(seconds):
+        sleeps.append(seconds)
+        if len(sleeps) == 2:
+            raise StopScheduler()
+
+    deps.sleep = stop_after_second_sleep
+    monkeypatch.setattr("collector.run_once", fake_run_once)
+    caplog.set_level(logging.ERROR, logger="collector")
+
+    with pytest.raises(StopScheduler):
+        run_forever(config, deps=deps)
+
+    assert len(calls) == 2
+    assert sleeps == [563, 597]
+    assert str(failure) not in caplog.text
+
+
+def test_scheduler_keeps_cadence_after_reported_session_expiry_and_continues(
+    config, monkeypatch
+):
+    sleeps = []
+    reports = [RunReport(session_expired=True), RunReport()]
+    deps = Dependencies(
+        exporter_session=FakeExporter(),
+        state_factory=open_state,
+        github_client_factory=FakeGitHubClient,
+        clock=Clock(
+            [
+                NOW,
+                NOW + timedelta(seconds=37),
+                NOW + timedelta(seconds=600),
+                NOW + timedelta(seconds=603),
+            ]
+        ),
+        sleep=lambda seconds: sleeps.append(seconds),
+    )
+
+    def stop_after_second_sleep(seconds):
+        sleeps.append(seconds)
+        if len(sleeps) == 2:
+            raise StopScheduler()
+
+    deps.sleep = stop_after_second_sleep
+    monkeypatch.setattr(
+        "collector.run_once", lambda config, initial=False, deps=None: reports.pop(0)
+    )
+
+    with pytest.raises(StopScheduler):
+        run_forever(config, deps=deps)
+
+    assert sleeps == [563, 597]

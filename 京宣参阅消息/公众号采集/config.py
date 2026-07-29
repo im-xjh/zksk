@@ -67,7 +67,7 @@ class Config:
             github_repo=_value("GITHUB_REPO"),
             github_branch=_value("GITHUB_BRANCH"),
             github_feed_path=_value("GITHUB_FEED_PATH"),
-            window_days=_positive_int("WINDOW_DAYS"),
+            window_days=_window_days(),
             interval_seconds=_positive_int("INTERVAL_SECONDS"),
             account_delay_seconds=_nonnegative_int("ACCOUNT_DELAY_SECONDS"),
             timezone=timezone,
@@ -84,6 +84,13 @@ def _value(name: str) -> str:
 
 def _positive_int(name: str) -> int:
     return _integer(name, minimum=1)
+
+
+def _window_days() -> int:
+    value = _positive_int("WINDOW_DAYS")
+    if value != 10:
+        raise ConfigurationError("WINDOW_DAYS 必须为 10")
+    return value
 
 
 def _nonnegative_int(name: str) -> int:
@@ -107,9 +114,25 @@ def _load_accounts(path: Path) -> list[dict]:
         raise ConfigurationError("账号清单无法读取") from error
     if not isinstance(manifest, dict) or manifest.get("version") != 1:
         raise ConfigurationError("账号清单格式无效")
-    accounts = manifest.get("accounts")
-    _validate_accounts(accounts)
-    return accounts
+    return _normalize_accounts(manifest.get("accounts"))
+
+
+def _normalize_accounts(accounts: object) -> list[dict]:
+    if not isinstance(accounts, list) or not accounts:
+        raise ConfigurationError("账号清单 accounts 不能为空")
+
+    normalized_accounts = []
+    for account in accounts:
+        if not isinstance(account, dict):
+            raise ConfigurationError("账号清单包含无效账号")
+        name = account["nickname"] if "nickname" in account else account.get("name")
+        fakeid = account.get("fakeid")
+        if not isinstance(name, str) or not name.strip() or not isinstance(fakeid, str) or not fakeid.strip():
+            raise ConfigurationError("账号缺少名称或 fakeid")
+        normalized_accounts.append({"name": name.strip(), "fakeid": fakeid})
+
+    _validate_accounts(normalized_accounts)
+    return normalized_accounts
 
 
 def _validate_accounts(accounts: object) -> None:

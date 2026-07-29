@@ -816,7 +816,7 @@ git commit -m '增加公众号采集容器配置'
 
 **Interfaces:**
 
-- Requires: user-provided account name and `fakeid` list
+- Requires: user-provided account nickname and `fakeid` list
 - Produces: running `jingxuan-wechat-collector` and first `feed.json` commit
 
 - [ ] **Step 1: 校验用户提供的公众号清单**
