@@ -22,7 +22,13 @@ def test_compose_uses_existing_exporter_network_and_read_only_mounts():
 def test_dockerfile_runs_the_collector_as_a_non_root_python_312_image():
     dockerfile = DOCKERFILE.read_text(encoding="utf-8")
 
-    assert "FROM docker.1ms.run/python:3.12-slim" in dockerfile
+    assert dockerfile.startswith(
+        "FROM docker.1ms.run/python:3.12-slim\n\n"
+        "ENV PYTHONUNBUFFERED=1 \\\n"
+        "    PIP_NO_CACHE_DIR=1 \\\n"
+        "    PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \\\n"
+        "    PIP_TRUSTED_HOST=pypi.tuna.tsinghua.edu.cn\n"
+    )
     assert "COPY requirements.txt ./" in dockerfile
     assert "pip install --no-cache-dir -r requirements.txt" in dockerfile
     assert "COPY collector.py config.py exporter.py github_feed.py models.py state.py ./" in dockerfile
