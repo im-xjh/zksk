@@ -4,6 +4,7 @@ render_*/
 Thumbs.db
 .DS_Store
 .work/
+.worktrees/
 .claude/
 __pycache__/
 *.pyc
