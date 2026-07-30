@@ -63,11 +63,12 @@ def test_build_feed_keeps_exactly_last_day():
     assert feed["generated_at"] == "2026-07-29T12:00:00+08:00"
 
 
-def test_build_feed_rejects_a_non_one_day_window():
+@pytest.mark.parametrize("window_days", [10, True, 1.0])
+def test_build_feed_rejects_non_integer_one_day_windows(window_days):
     now = datetime(2026, 7, 29, 12, 0, tzinfo=ZoneInfo("Asia/Shanghai"))
 
     with pytest.raises(ValueError, match="window_days 必须为 1"):
-        build_feed([], now, window_days=10)
+        build_feed([], now, window_days=window_days)
 
 
 def test_build_feed_deduplicates_url_and_sorts_newest_first():
