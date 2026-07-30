@@ -74,7 +74,7 @@ def client(fake_http):
 
 def feed(article_ids, generated_at="2026-07-29T09:00:00+08:00"):
     return {
-        "window_days": 10,
+        "window_days": 1,
         "generated_at": generated_at,
         "article_count": len(article_ids),
         "articles": [{"id": article_id, "title": f"文章 {article_id}"} for article_id in article_ids],
@@ -124,7 +124,7 @@ def test_publish_if_changed_writes_utf8_pretty_json_with_newline(client, fake_ht
     encoded = fake_http.put_calls[0]["json"]["content"]
     assert base64.b64decode(encoded).decode("utf-8") == (
         '{\n'
-        '  "window_days": 10,\n'
+        '  "window_days": 1,\n'
         '  "generated_at": "2026-07-29T09:00:00+08:00",\n'
         '  "article_count": 1,\n'
         '  "articles": [\n'

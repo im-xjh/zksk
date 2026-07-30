@@ -58,7 +58,7 @@ def public_article(article: Article) -> dict:
 
 
 def build_feed(
-    rows: Iterable[Mapping], now: datetime, window_days: int = 10
+    rows: Iterable[Mapping], now: datetime, window_days: int = 1
 ) -> dict:
     """保留时间窗口内的文章，按发布时间倒序去重后生成公开 Feed。"""
     cutoff_ts = int((now - timedelta(days=window_days)).timestamp())

@@ -1,0 +1,62 @@
+﻿# Task 1 实施报告
+
+## 结果
+
+已将京宣公众号采集窗口固定为1天，并按源文件原顺序导入19项正式账号清单。公开 Feed 和网页均只接受 `window_days: 1`。
+
+## TDD 红灯记录
+
+命令：
+
+```bash
+京宣参阅消息/公众号采集/.venv/bin/python -m pytest \
+  京宣参阅消息/公众号采集/tests/test_models.py \
+  京宣参阅消息/公众号采集/tests/test_collector.py \
+  京宣参阅消息/公众号采集/tests/test_github_feed.py -q
+```
+
+退出码：1。
+
+失败原因：3项测试失败。旧的10天默认窗口错误保留了“向前1天1秒”的文章；配置仍接受字符串 `"10"` 并拒绝 `"1"`。
+
+命令：
+
+```bash
+node --test docs/jingxuan/tests/app.test.mjs
+```
+
+退出码：1。
+
+失败原因：2项测试失败。网页仍拒绝 `window_days: 1`，同时接受 `window_days: 10`。
+
+## 绿灯记录
+
+实现最小改动后重新运行上述目标测试。
+
+- Python 目标测试：退出码0，45项通过。
+- Node 目标测试：退出码0，10项通过。
+
+## 全量验证
+
+| 命令 | 结果 |
+| --- | --- |
+| `京宣参阅消息/公众号采集/.venv/bin/python -m pytest 京宣参阅消息/公众号采集/tests -q` | 退出码0，58项通过。 |
+| `node --test docs/jingxuan/tests/app.test.mjs` | 退出码0，10项通过。 |
+| `京宣参阅消息/公众号采集/.venv/bin/python -m compileall -q 京宣参阅消息/公众号采集` | 退出码0。 |
+| `GITHUB_TOKEN=verification-token docker compose -f 京宣参阅消息/公众号采集/compose.yml config --quiet` | 退出码0。 |
+| `git diff --check` | 退出码0。 |
+| `GITHUB_TOKEN=verification-token ACCOUNTS_FILE="$PWD/京宣参阅消息/公众号采集/accounts.json" 京宣参阅消息/公众号采集/.venv/bin/python 京宣参阅消息/公众号采集/collector.py validate-accounts` | 退出码0，显示19个账号。 |
+
+## 数据校验与自审
+
+- 源文件的 `accounts` 有19项，导入后仍为19项，顺序未改变。
+- 每项严格只有 `nickname`、`fakeid` 两个字段；未导入文章、完成状态、计数、时间、头像或汇总字段。
+- `fakeid` 全部非空且唯一；本报告未打印任何具体 `fakeid`。
+- 模型边界测试覆盖向前24小时闭区间：恰好1天前保留，早1秒排除。
+- 配置测试覆盖只接受字符串 `"1"`，拒绝 `"10"`、`"0"` 和非整数值。
+- 网页测试覆盖只接受 `window_days: 1`，并拒绝 `window_days: 10`。
+- 已复核任务范围：未修改计划文件或 ledger。
+
+## 关注项
+
+首次同步、GitHub Pages 公网检查和常驻容器验收属于合并推送后的服务器部署步骤，当前工作树尚未执行。

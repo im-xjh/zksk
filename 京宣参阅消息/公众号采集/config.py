@@ -20,7 +20,7 @@ DEFAULTS = {
     "GITHUB_REPO": "im-xjh/zksk",
     "GITHUB_BRANCH": "main",
     "GITHUB_FEED_PATH": "docs/jingxuan/feed.json",
-    "WINDOW_DAYS": "10",
+    "WINDOW_DAYS": "1",
     "INTERVAL_SECONDS": "600",
     "ACCOUNT_DELAY_SECONDS": "15",
     "TZ": "Asia/Shanghai",
@@ -88,8 +88,8 @@ def _positive_int(name: str) -> int:
 
 def _window_days() -> int:
     value = _positive_int("WINDOW_DAYS")
-    if value != 10:
-        raise ConfigurationError("WINDOW_DAYS 必须为 10")
+    if value != 1:
+        raise ConfigurationError("WINDOW_DAYS 必须为 1")
     return value
 
 

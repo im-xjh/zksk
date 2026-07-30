@@ -10,7 +10,7 @@ function validFeed() {
   return {
     version: 1,
     generated_at: "2026-07-29T10:00:00+08:00",
-    window_days: 10,
+    window_days: 1,
     article_count: 1,
     articles: [{
       id: "article-1",
@@ -51,9 +51,9 @@ test("validateFeed rejects an inconsistent article count", () => {
   assert.throws(() => validateFeed(feed), /文章数据格式无效/);
 });
 
-test("validateFeed rejects a non-ten-day window", () => {
+test("validateFeed rejects a non-one-day window", () => {
   const feed = validFeed();
-  feed.window_days = 7;
+  feed.window_days = 10;
   assert.throws(() => validateFeed(feed), /文章数据格式无效/);
 });
 

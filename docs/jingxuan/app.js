@@ -64,7 +64,7 @@
       typeof feed !== "object" ||
       Array.isArray(feed) ||
       feed.version !== 1 ||
-      feed.window_days !== 10 ||
+      feed.window_days !== 1 ||
       !(feed.generated_at === null || isParseableTime(feed.generated_at)) ||
       !Number.isInteger(feed.article_count) ||
       feed.article_count < 0 ||

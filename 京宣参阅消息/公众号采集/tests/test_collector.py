@@ -124,7 +124,7 @@ def config(tmp_path):
         github_repo="im-xjh/zksk",
         github_branch="main",
         github_feed_path="docs/jingxuan/feed.json",
-        window_days=10,
+        window_days=1,
         interval_seconds=600,
         account_delay_seconds=0,
         timezone=ZoneInfo("Asia/Shanghai"),
@@ -213,8 +213,8 @@ def load_config(tmp_path, monkeypatch, accounts, *, window_days=None):
     return Config.load()
 
 
-@pytest.mark.parametrize("window_days", ["7", "0", "not-an-integer-secret"])
-def test_config_load_rejects_window_days_other_than_ten_without_echoing_value(
+@pytest.mark.parametrize("window_days", ["10", "0", "not-an-integer-secret"])
+def test_config_load_rejects_window_days_other_than_one_without_echoing_value(
     tmp_path, monkeypatch, window_days
 ):
     with pytest.raises(ConfigurationError) as error:
@@ -228,15 +228,15 @@ def test_config_load_rejects_window_days_other_than_ten_without_echoing_value(
     assert window_days not in str(error.value)
 
 
-def test_config_load_accepts_window_days_ten(tmp_path, monkeypatch):
+def test_config_load_accepts_window_days_one(tmp_path, monkeypatch):
     config = load_config(
         tmp_path,
         monkeypatch,
         [{"name": "京宣", "fakeid": "fakeid-1"}],
-        window_days="10",
+        window_days="1",
     )
 
-    assert config.window_days == 10
+    assert config.window_days == 1
 
 
 def test_config_load_normalizes_canonical_nickname_to_collector_name(tmp_path, monkeypatch):

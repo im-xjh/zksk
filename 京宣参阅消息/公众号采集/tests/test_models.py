@@ -44,12 +44,12 @@ def test_normalize_article_converts_exporter_fields_to_article():
     assert article.publish_ts == 1785283200
 
 
-def test_build_feed_keeps_exactly_last_ten_days():
+def test_build_feed_keeps_exactly_last_day():
     now = datetime(2026, 7, 29, 12, 0, tzinfo=ZoneInfo("Asia/Shanghai"))
     rows = [
-        article_row("inside", now - timedelta(days=9, hours=23)),
-        article_row("boundary", now - timedelta(days=10)),
-        article_row("outside", now - timedelta(days=10, seconds=1)),
+        article_row("inside", now - timedelta(hours=23)),
+        article_row("boundary", now - timedelta(days=1)),
+        article_row("outside", now - timedelta(days=1, seconds=1)),
         article_row("future", now + timedelta(seconds=1)),
     ]
 
@@ -57,7 +57,7 @@ def test_build_feed_keeps_exactly_last_ten_days():
 
     assert [item["title"] for item in feed["articles"]] == ["inside", "boundary"]
     assert feed["version"] == 1
-    assert feed["window_days"] == 10
+    assert feed["window_days"] == 1
     assert feed["generated_at"] == "2026-07-29T12:00:00+08:00"
 
 
