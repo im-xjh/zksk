@@ -124,8 +124,10 @@ def _normalize_accounts(accounts: object) -> list[dict]:
     for account in accounts:
         if not isinstance(account, dict):
             raise ConfigurationError("账号清单包含无效账号")
-        name = account["nickname"] if "nickname" in account else account.get("name")
-        fakeid = account.get("fakeid")
+        if set(account) != {"nickname", "fakeid"}:
+            raise ConfigurationError("账号清单字段无效")
+        name = account["nickname"]
+        fakeid = account["fakeid"]
         if not isinstance(name, str) or not name.strip() or not isinstance(fakeid, str) or not fakeid.strip():
             raise ConfigurationError("账号缺少名称或 fakeid")
         normalized_accounts.append({"name": name.strip(), "fakeid": fakeid})

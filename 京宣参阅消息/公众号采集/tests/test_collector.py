@@ -187,8 +187,8 @@ def test_run_once_rejects_empty_accounts_before_authentication_or_network(deps, 
 @pytest.mark.parametrize(
     "accounts",
     [
-        [{"name": "A", "fakeid": "same"}, {"name": "B", "fakeid": "same"}],
-        [{"name": "A"}],
+        [{"nickname": "A", "fakeid": "same"}, {"nickname": "B", "fakeid": "same"}],
+        [{"nickname": "A"}],
     ],
 )
 def test_config_load_rejects_duplicate_or_missing_fakeid(tmp_path, monkeypatch, accounts):
@@ -223,7 +223,7 @@ def test_config_load_rejects_window_days_other_than_one_without_echoing_value(
         load_config(
             tmp_path,
             monkeypatch,
-            [{"name": "京宣", "fakeid": "fakeid-1"}],
+            [{"nickname": "京宣", "fakeid": "fakeid-1"}],
             window_days=window_days,
         )
 
@@ -234,7 +234,7 @@ def test_config_load_accepts_window_days_one(tmp_path, monkeypatch):
     config = load_config(
         tmp_path,
         monkeypatch,
-        [{"name": "京宣", "fakeid": "fakeid-1"}],
+        [{"nickname": "京宣", "fakeid": "fakeid-1"}],
         window_days="1",
     )
 
@@ -251,24 +251,22 @@ def test_config_load_normalizes_canonical_nickname_to_collector_name(tmp_path, m
     assert config.accounts == [{"name": "京宣", "fakeid": "fakeid-1"}]
 
 
-def test_config_load_accepts_legacy_name(tmp_path, monkeypatch):
-    config = load_config(
-        tmp_path,
-        monkeypatch,
-        [{"name": "旧名称", "fakeid": "fakeid-1"}],
-    )
+@pytest.mark.parametrize(
+    "account",
+    [
+        {"name": "旧名称", "fakeid": "fakeid-1"},
+        {"nickname": "规范名称", "name": "旧名称", "fakeid": "fakeid-1"},
+        {"nickname": "规范名称", "fakeid": "fakeid-1", "articles": []},
+        {"nickname": "规范名称", "fakeid": "fakeid-1", "completed": True},
+    ],
+)
+def test_config_load_rejects_noncanonical_account_fields(
+    tmp_path, monkeypatch, account
+):
+    with pytest.raises(ConfigurationError) as error:
+        load_config(tmp_path, monkeypatch, [account])
 
-    assert config.accounts == [{"name": "旧名称", "fakeid": "fakeid-1"}]
-
-
-def test_config_load_prefers_nickname_when_manifest_has_both_name_fields(tmp_path, monkeypatch):
-    config = load_config(
-        tmp_path,
-        monkeypatch,
-        [{"nickname": "规范名称", "name": "旧名称", "fakeid": "fakeid-1"}],
-    )
-
-    assert config.accounts == [{"name": "规范名称", "fakeid": "fakeid-1"}]
+    assert str(error.value) == "账号清单字段无效"
 
 
 @pytest.mark.parametrize(
@@ -276,12 +274,13 @@ def test_config_load_prefers_nickname_when_manifest_has_both_name_fields(tmp_pat
     [
         {"fakeid": "fakeid-1"},
         {"nickname": " ", "fakeid": "fakeid-1"},
-        {"nickname": "", "name": "旧名称", "fakeid": "fakeid-1"},
-        {"name": " ", "fakeid": "fakeid-1"},
+        {"nickname": "", "fakeid": "fakeid-1"},
     ],
 )
-def test_config_load_rejects_missing_or_blank_normalized_name(tmp_path, monkeypatch, account):
-    with pytest.raises(ConfigurationError, match="名称"):
+def test_config_load_rejects_missing_or_blank_canonical_name(
+    tmp_path, monkeypatch, account
+):
+    with pytest.raises(ConfigurationError):
         load_config(tmp_path, monkeypatch, [account])
 
 
