@@ -213,7 +213,9 @@ def load_config(tmp_path, monkeypatch, accounts, *, window_days=None):
     return Config.load()
 
 
-@pytest.mark.parametrize("window_days", ["10", "0", "not-an-integer-secret"])
+@pytest.mark.parametrize(
+    "window_days", ["10", "0", "01", "+1", " 1", "not-an-integer-secret"]
+)
 def test_config_load_rejects_window_days_other_than_one_without_echoing_value(
     tmp_path, monkeypatch, window_days
 ):
@@ -225,7 +227,7 @@ def test_config_load_rejects_window_days_other_than_one_without_echoing_value(
             window_days=window_days,
         )
 
-    assert window_days not in str(error.value)
+    assert str(error.value) == "WINDOW_DAYS 必须为 1"
 
 
 def test_config_load_accepts_window_days_one(tmp_path, monkeypatch):

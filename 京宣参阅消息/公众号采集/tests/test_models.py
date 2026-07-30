@@ -3,6 +3,8 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 import sys
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from models import build_feed, normalize_article
@@ -59,6 +61,13 @@ def test_build_feed_keeps_exactly_last_day():
     assert feed["version"] == 1
     assert feed["window_days"] == 1
     assert feed["generated_at"] == "2026-07-29T12:00:00+08:00"
+
+
+def test_build_feed_rejects_a_non_one_day_window():
+    now = datetime(2026, 7, 29, 12, 0, tzinfo=ZoneInfo("Asia/Shanghai"))
+
+    with pytest.raises(ValueError, match="window_days 必须为 1"):
+        build_feed([], now, window_days=10)
 
 
 def test_build_feed_deduplicates_url_and_sorts_newest_first():

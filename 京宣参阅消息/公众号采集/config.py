@@ -87,10 +87,9 @@ def _positive_int(name: str) -> int:
 
 
 def _window_days() -> int:
-    value = _positive_int("WINDOW_DAYS")
-    if value != 1:
+    if _value("WINDOW_DAYS") != "1":
         raise ConfigurationError("WINDOW_DAYS 必须为 1")
-    return value
+    return 1
 
 
 def _nonnegative_int(name: str) -> int:

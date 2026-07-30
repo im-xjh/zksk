@@ -61,6 +61,8 @@ def build_feed(
     rows: Iterable[Mapping], now: datetime, window_days: int = 1
 ) -> dict:
     """保留时间窗口内的文章，按发布时间倒序去重后生成公开 Feed。"""
+    if window_days != 1:
+        raise ValueError("window_days 必须为 1")
     cutoff_ts = int((now - timedelta(days=window_days)).timestamp())
     now_ts = int(now.timestamp())
     articles = [

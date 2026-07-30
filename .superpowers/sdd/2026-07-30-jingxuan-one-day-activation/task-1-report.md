@@ -60,3 +60,45 @@ node --test docs/jingxuan/tests/app.test.mjs
 ## 关注项
 
 首次同步、GitHub Pages 公网检查和常驻容器验收属于合并推送后的服务器部署步骤，当前工作树尚未执行。
+
+## Fix round 1 审查修复
+
+### 红灯
+
+命令：
+
+```bash
+京宣参阅消息/公众号采集/.venv/bin/python -m pytest \
+  京宣参阅消息/公众号采集/tests/test_models.py \
+  京宣参阅消息/公众号采集/tests/test_collector.py -q
+```
+
+退出码：1。
+
+预期失败：`build_feed(..., window_days=10)` 未抛出异常；配置仍接受 `"01"`、`"+1"` 和 `" 1"`。
+
+### 绿灯与全量验证
+
+覆盖测试命令：
+
+```bash
+京宣参阅消息/公众号采集/.venv/bin/python -m pytest \
+  京宣参阅消息/公众号采集/tests/test_models.py \
+  京宣参阅消息/公众号采集/tests/test_collector.py -q
+```
+
+结果：退出码0，40项通过。
+
+| 命令 | 结果 |
+| --- | --- |
+| `京宣参阅消息/公众号采集/.venv/bin/python -m pytest 京宣参阅消息/公众号采集/tests -q` | 退出码0，62项通过。 |
+| `node --test docs/jingxuan/tests/app.test.mjs` | 退出码0，10项通过。 |
+| `京宣参阅消息/公众号采集/.venv/bin/python -m compileall -q 京宣参阅消息/公众号采集` | 退出码0。 |
+| `GITHUB_TOKEN=verification-token docker compose -f 京宣参阅消息/公众号采集/compose.yml config --quiet` | 退出码0。 |
+| `git diff --check` | 退出码0。 |
+
+### 自审
+
+- `build_feed` 在生成 Feed 前拒绝任何不等于1的显式窗口参数，避免生成10天 Feed。
+- `WINDOW_DAYS` 只接受原始字符串精确为 `"1"`，因此拒绝前导零、符号和空白；固定错误消息不包含输入值。
+- 为前导空格样本将原有“输入值不在错误消息中”的断言改为固定安全消息比较，避免要求中的 `" 1"` 被消息末尾的“为 1”误判为回显。
