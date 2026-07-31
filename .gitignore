@@ -7,3 +7,6 @@ Thumbs.db
 .claude/
 __pycache__/
 *.pyc
+
+# Weibo spider (nested repo, contains cookies)
+my_weibospider/
