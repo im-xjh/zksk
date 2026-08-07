@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "accounts": [
+    {
+      "nickname": "界面新闻",
+      "fakeid": "MjM5NTE0ODc2Nw=="
+    },
+    {
+      "nickname": "齐鲁晚报",
+      "fakeid": "Mzg3OTgwODM2NA=="
+    },
+    {
+      "nickname": "大象新闻",
+      "fakeid": "MzU1OTYxOTI3NQ=="
+    },
+    {
+      "nickname": "21世纪经济报道",
+      "fakeid": "MjI3Njc0NTk4MQ=="
+    },
+    {
+      "nickname": "荆楚网",
+      "fakeid": "MjM5MTI3MTY3Mg=="
+    },
+    {
+      "nickname": "看看新闻Knews",
+      "fakeid": "MzIwMTE1MzkyOA=="
+    },
+    {
+      "nickname": "四川观察sctv",
+      "fakeid": "MzU3MzczMDgyNg=="
+    },
+    {
+      "nickname": "红星新闻",
+      "fakeid": "MzI3MTQzNjYxNw=="
+    },
+    {
+      "nickname": "九派新闻",
+      "fakeid": "MzA4MzI4MjExMA=="
+    },
+    {
+      "nickname": "北京青年报",
+      "fakeid": "MjM5NzUyNjc0MA=="
+    },
+    {
+      "nickname": "中国新闻网",
+      "fakeid": "MjM5ODA4OTIyMA=="
+    },
+    {
+      "nickname": "新黄河",
+      "fakeid": "MzkwNTI0OTQxOA=="
+    },
+    {
+      "nickname": "现代快报",
+      "fakeid": "MzI4ODg2ODY3NQ=="
+    },
+    {
+      "nickname": "潇湘晨报",
+      "fakeid": "Mjk0MDY5NjMyMA=="
+    },
+    {
+      "nickname": "北京商报",
+      "fakeid": "MjM5ODg0NzYwMQ=="
+    },
+    {
+      "nickname": "新京报评论",
+      "fakeid": "MzA3NzMxNjQzMA=="
+    },
+    {
+      "nickname": "新京报",
+      "fakeid": "MzU2MzA2ODk3Nw=="
+    },
+    {
+      "nickname": "北京晚报",
+      "fakeid": "MzUyOTAxMjYzNQ=="
+    },
+    {
+      "nickname": "北京日报",
+      "fakeid": "MjM5NTE1OTQyMQ=="
+    }
+  ]
+}

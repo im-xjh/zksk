@@ -1,0 +1,25 @@
+name: jingxuan-wechat-collector
+# Before the first server start: sudo install -d -o 10001 -g 10001 state
+
+services:
+  jingxuan-wechat-collector:
+    build: .
+    image: jingxuan-wechat-collector:local
+    container_name: jingxuan-wechat-collector
+    restart: unless-stopped
+    user: "10001:10001"
+    environment:
+      GITHUB_TOKEN: ${GITHUB_TOKEN:?GITHUB_TOKEN is required}
+      TZ: Asia/Shanghai
+    volumes:
+      - /opt/wechat-article-exporter/data/kv/cookie:/exporter-kv-cookie:ro
+      - /opt/wechat-article-exporter/sync-state:/existing-sync-state:ro
+      - ./state:/state
+      - ./accounts.json:/app/accounts.json:ro
+    networks:
+      - exporter
+
+networks:
+  exporter:
+    external: true
+    name: wechat-article-exporter_default

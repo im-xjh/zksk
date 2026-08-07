@@ -1,0 +1,81 @@
+:root {
+  color: #1d1d1f;
+  background: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  line-height: 1.65;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  width: min(920px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 40px 0 56px;
+}
+
+.page-header {
+  border-bottom: 1px solid #d9d9d9;
+  margin-bottom: 24px;
+}
+
+h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  line-height: 1.3;
+  margin: 0 0 8px;
+}
+
+#feed-meta,
+.article-meta,
+#feed-status {
+  color: #5b5b5b;
+  font-size: 0.9375rem;
+}
+
+#feed-status {
+  margin: 0 0 16px;
+}
+
+#article-list {
+  display: grid;
+  gap: 0;
+}
+
+.article-row {
+  border-bottom: 1px solid #e5e5e5;
+  padding: 20px 0;
+  min-width: 0;
+}
+
+.article-meta {
+  margin: 0 0 6px;
+}
+
+.article-title {
+  color: #0759a5;
+  font-size: 1.125rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+.article-title:visited {
+  color: #675a79;
+}
+
+.article-summary {
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  main {
+    padding-top: 24px;
+  }
+}
